@@ -16,9 +16,9 @@ namespace FunctionsinWPF
     public partial class MainWindow : Window
     {
         private int stride = 45;
-        private bool running = false;
+        private bool running;
         private int prevIndex = -1;
-        private double frametime = 16;
+        private double frametime;
 
         public MainWindow()
         {
@@ -27,8 +27,8 @@ namespace FunctionsinWPF
             var gs = (GridLength)new GridLengthConverter().ConvertFromString("*");            
             for (int i = stride; --i>=0;)
             {
-                ChexGrid.RowDefinitions.Add(new RowDefinition() { Height = gs });
-                ChexGrid.ColumnDefinitions.Add(new ColumnDefinition() { Width = gs });
+                ChexGrid.RowDefinitions.Add(new RowDefinition { Height = gs });
+                ChexGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = gs });
             }
 
             for (int i = 0; i < stride; i++)
@@ -48,7 +48,7 @@ namespace FunctionsinWPF
                 prevIndex = -1;
             };
             ChexGrid.MouseDown += mouseHandler;
-            setFPS(60);
+            setFPS(30);
         }
 
         private void setFPS(double newfps)
