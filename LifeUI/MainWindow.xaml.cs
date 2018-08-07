@@ -1,10 +1,8 @@
 ﻿using System;
 using System.Windows;
-using System.Linq;
 using System.Collections.Generic;
 using System.Windows.Controls;
 using FunctionLib;
-using Microsoft.FSharp.Core;
 using Microsoft.FSharp.Collections;
 using System.Threading.Tasks;
 using System.Windows.Input;
@@ -17,31 +15,11 @@ namespace FunctionsinWPF
     /// </summary>
     public partial class MainWindow : Window
     {
-        int stride = 45;
-        bool running = false;
-        int prevIndex = -1;
-        private double frametime = 1000 * 1.0 / 60.0;
+        private int stride = 45;
+        private bool running = false;
+        private int prevIndex = -1;
+        private double frametime = 16;
 
-        int getIndex(Point pos, Grid grid)
-        {
-            var x = (int)(pos.X * stride / grid.ActualWidth);
-            var y = (int)(pos.Y * stride / grid.ActualHeight);
-            return y * stride + x;
-        }
-
-        private void mouseHandler(object o, MouseEventArgs e)
-        {
-            if (e.LeftButton == MouseButtonState.Pressed)
-            {
-                var grid = (Grid)o;
-                var index = getIndex(e.GetPosition(grid), grid);
-                if (index < grid.Children.Count && prevIndex != index) {
-                    var box = ((CheckBox)grid.Children[index]);
-                    box.IsChecked = !box.IsChecked;
-                    prevIndex = index;
-                }
-            }
-        }
         public MainWindow()
         {
             InitializeComponent();
@@ -70,6 +48,34 @@ namespace FunctionsinWPF
                 prevIndex = -1;
             };
             ChexGrid.MouseDown += mouseHandler;
+            setFPS(60);
+        }
+
+        private void setFPS(double newfps)
+        {
+            frametime = 1000 * 1.0 / newfps;
+        }
+
+        private int getIndex(Point pos, Grid grid)
+        {
+            var x = (int)(pos.X * stride / grid.ActualWidth);
+            var y = (int)(pos.Y * stride / grid.ActualHeight);
+            return y * stride + x;
+        }
+
+        private void mouseHandler(object o, MouseEventArgs e)
+        {
+            if (e.LeftButton == MouseButtonState.Pressed)
+            {
+                var grid = (Grid)o;
+                var index = getIndex(e.GetPosition(grid), grid);
+                if (index < grid.Children.Count && prevIndex != index)
+                {
+                    var box = ((CheckBox)grid.Children[index]);
+                    box.IsChecked = !box.IsChecked;
+                    prevIndex = index;
+                }
+            }
         }
 
         private void functionStart(object sender, RoutedEventArgs e)
@@ -82,7 +88,7 @@ namespace FunctionsinWPF
             App.functionalmain(fnc);
         }
 
-        void setBoxes(FSharpList<bool> list)
+        private void setBoxes(FSharpList<bool> list)
         {
             int index = 0;
             foreach (CheckBox p in ChexGrid.Children)
@@ -91,7 +97,7 @@ namespace FunctionsinWPF
             }
         }
 
-        void setBoxes(bool value)
+        private void setBoxes(bool value)
         {
             foreach (CheckBox p in ChexGrid.Children)
             {
@@ -99,7 +105,7 @@ namespace FunctionsinWPF
             }
         }
 
-        bool[] getBoxes()
+        private bool[] getBoxes()
         {
             var list = new List<bool>();
             foreach (CheckBox p in ChexGrid.Children)
@@ -109,7 +115,7 @@ namespace FunctionsinWPF
             return list.ToArray();
         }
 
-        void tickFrame()
+        private void tickFrame()
         {
             var t = new Stopwatch();
             t.Start();
@@ -119,7 +125,7 @@ namespace FunctionsinWPF
             OutputBox.Text = $"generated in {el} ms";
         }
 
-        async Task tickFrameAsync()
+        private async Task tickFrameAsync()
         {
             var t = new Stopwatch();
 
@@ -175,6 +181,25 @@ namespace FunctionsinWPF
         {
             running = false;
             setBoxes(false);
+        }
+        
+        private void fpsFromUI()
+        {
+            if (Double.TryParse(fpsBox.Text, out double fps))
+                setFPS(fps);
+        }
+
+        private void clickSetFps(object sender, RoutedEventArgs e)
+        {
+            fpsFromUI();
+        }
+
+        private void fpsTyped(object sender, KeyEventArgs e)
+        {
+            if (e.Key == Key.Return)
+            {
+                fpsFromUI();
+            }
         }
     }
 }
