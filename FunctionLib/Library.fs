@@ -1,37 +1,5 @@
 namespace FunctionLib
 
-module Life =
-    // convert bool for indexed list to numeric value
-    let getCellValue i (l :array<bool>) =
-        if i > 0 && i < l.Length && l.[i] then
-            1
-        else
-            0
-    
-    // there's got to be a better way to do this
-    let getNeighbors i list stride =
-        Array.fold (fun count st -> count + (getCellValue (st+i) list)) 0 stride    
-    
-    // conway's game of life rules:
-    // more than 3 or less than 2 neighbors die,
-    // 3 always live and 2 always keep their state
-    let isAlive current neighbors =
-        if neighbors < 2 || neighbors > 3 then
-            false
-        else if neighbors = 3 then
-            true
-        else
-            current
-    
-    // get cell indexes for a certain stride
-    let getNeighborOffsets stride = [|1;-1;-stride;-stride+1;-stride-1;stride;stride+1;stride-1|]
-
-    // process the list with our rules
-    let lifeGameTick (cells : array<bool>) stride = 
-        let offsets = getNeighborOffsets stride
-        [for i in 0 .. cells.Length-1 do
-            yield isAlive cells.[i] (getNeighbors i cells offsets)]
-
 module Main =
     // various functions to play with stuff
     let mult = function
