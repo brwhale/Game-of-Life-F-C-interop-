@@ -18,17 +18,26 @@ namespace FunctionsinWPF
     {
         int stride = 45;
         bool running = false;
+        int prevIndex = -1;
+
+        int getIndex(Point pos, Grid grid)
+        {
+            var x = (int)(pos.X * stride / grid.ActualWidth);
+            var y = (int)(pos.Y * stride / grid.ActualHeight);
+            return y * stride + x;
+        }
+
         private void mouseHandler(object o, MouseEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
             {
                 var grid = (Grid)o;
-                var pos = e.GetPosition(grid);
-                var x = (int)(pos.X * stride / grid.ActualWidth);
-                var y = (int)(pos.Y * stride / grid.ActualHeight);
-                var index = y * stride + x;
-                if (index < grid.Children.Count)
-                    ((CheckBox)grid.Children[index]).IsChecked = true;
+                var index = getIndex(e.GetPosition(grid), grid);
+                if (index < grid.Children.Count && prevIndex != index) {
+                    var box = ((CheckBox)grid.Children[index]);
+                    box.IsChecked = !box.IsChecked;
+                    prevIndex = index;
+                }
             }
         }
         public MainWindow()
@@ -53,7 +62,11 @@ namespace FunctionsinWPF
                     Grid.SetColumn(box, j);
                 }
             }
-            ChexGrid.MouseMove += mouseHandler;
+            ChexGrid.MouseMove += mouseHandler;            
+            ChexGrid.MouseDown += (o, e) =>
+            {
+                prevIndex = -1;
+            };
             ChexGrid.MouseDown += mouseHandler;
         }
 
@@ -76,6 +89,14 @@ namespace FunctionsinWPF
             }
         }
 
+        void setBoxes(bool value)
+        {
+            foreach (CheckBox p in ChexGrid.Children)
+            {
+                p.IsChecked = value;
+            }
+        }
+
         List<bool> getBoxes()
         {
             var list = new List<bool>();
@@ -93,24 +114,26 @@ namespace FunctionsinWPF
 
         async Task tickFrameAsync()
         {
-            // exit if the app is trying to quit
-            if (Application.Current == null) return;
-            // get button states from ui thread
-            List<bool> list = new List<bool>();
-            Application.Current.Dispatcher.Invoke((() => {
-                list = getBoxes();
-            }));
-            // run function logic in background thread
-            var ne = Life.lifeGameTick(ListModule.OfSeq(list), stride);
-            // set button states from ui thread
-            Application.Current.Dispatcher.Invoke((() => {
-                setBoxes(ne);
-            }));
-            // animate
-            await Task.Delay(16);
-            if (running)
+            while (running)
             {
-                await tickFrameAsync();
+                // exit if the app is trying to quit
+                if (!running || Application.Current == null) return;
+                // get button states from ui thread
+                List<bool> list = new List<bool>();
+                Application.Current.Dispatcher.Invoke((() =>
+                {
+                    list = getBoxes();
+                }));
+                // run function logic in background thread
+                var ne = Life.lifeGameTick(ListModule.OfSeq(list), stride);
+                if (!running) return;
+                // set button states from ui thread
+                Application.Current.Dispatcher.Invoke((() =>
+                {
+                    setBoxes(ne);
+                }));
+                // animate
+                await Task.Delay(16);
             }
         }
 
@@ -127,6 +150,18 @@ namespace FunctionsinWPF
         private void frameButton(object sender, RoutedEventArgs e)
         {
             tickFrame();
+        }
+
+        private void fillbutton(object sender, RoutedEventArgs e)
+        {
+            running = false;
+            setBoxes(true);
+        }
+
+        private void clearbutton(object sender, RoutedEventArgs e)
+        {
+            running = false;
+            setBoxes(false);
         }
     }
 }
