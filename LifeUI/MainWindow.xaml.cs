@@ -8,6 +8,7 @@ using Microsoft.FSharp.Core;
 using Microsoft.FSharp.Collections;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Diagnostics;
 
 namespace FunctionsinWPF
 {
@@ -109,7 +110,12 @@ namespace FunctionsinWPF
 
         void tickFrame()
         {
+            var t = new Stopwatch();
+            t.Start();
             setBoxes(Life.lifeGameTick(ListModule.OfSeq(getBoxes()), stride));
+            t.Stop();
+            var el = t.Elapsed.TotalMilliseconds;
+            OutputBox.Text = $"generated in {el} ms";
         }
 
         async Task tickFrameAsync()
@@ -125,12 +131,17 @@ namespace FunctionsinWPF
                     list = getBoxes();
                 }));
                 // run function logic in background thread
+                var t = new Stopwatch();
+                t.Start();
                 var ne = Life.lifeGameTick(ListModule.OfSeq(list), stride);
+                t.Stop();
+                var el = t.Elapsed.TotalMilliseconds;
                 if (!running) return;
                 // set button states from ui thread
                 Application.Current.Dispatcher.Invoke((() =>
                 {
                     setBoxes(ne);
+                    OutputBox.Text = $"generated in {el} ms";
                 }));
                 // animate
                 await Task.Delay(16);
