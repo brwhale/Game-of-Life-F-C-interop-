@@ -98,21 +98,21 @@ namespace FunctionsinWPF
             }
         }
 
-        List<bool> getBoxes()
+        bool[] getBoxes()
         {
             var list = new List<bool>();
             foreach (CheckBox p in ChexGrid.Children)
             {
                 list.Add(p.IsChecked ?? false);
             }
-            return list;
+            return list.ToArray();
         }
 
         void tickFrame()
         {
             var t = new Stopwatch();
             t.Start();
-            setBoxes(Life.lifeGameTick(ListModule.OfSeq(getBoxes()), stride));
+            setBoxes(Life.lifeGameTick(getBoxes(), stride));
             t.Stop();
             var el = t.Elapsed.TotalMilliseconds;
             OutputBox.Text = $"generated in {el} ms";
@@ -125,7 +125,7 @@ namespace FunctionsinWPF
                 // exit if the app is trying to quit
                 if (!running || Application.Current == null) return;
                 // get button states from ui thread
-                List<bool> list = new List<bool>();
+                bool[] list = new bool[0];
                 Application.Current.Dispatcher.Invoke((() =>
                 {
                     list = getBoxes();
@@ -133,7 +133,7 @@ namespace FunctionsinWPF
                 // run function logic in background thread
                 var t = new Stopwatch();
                 t.Start();
-                var ne = Life.lifeGameTick(ListModule.OfSeq(list), stride);
+                var ne = Life.lifeGameTick(list, stride);
                 t.Stop();
                 var el = t.Elapsed.TotalMilliseconds;
                 if (!running) return;
@@ -155,7 +155,6 @@ namespace FunctionsinWPF
             {
                 Task.Run(()=>tickFrameAsync());
             }
-            
         }
 
         private void frameButton(object sender, RoutedEventArgs e)
