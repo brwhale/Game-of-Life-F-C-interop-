@@ -20,6 +20,7 @@ namespace FunctionsinWPF
         int stride = 45;
         bool running = false;
         int prevIndex = -1;
+        private double frametime = 1000 * 1.0 / 60.0;
 
         int getIndex(Point pos, Grid grid)
         {
@@ -120,31 +121,33 @@ namespace FunctionsinWPF
 
         async Task tickFrameAsync()
         {
+            var t = new Stopwatch();
+
             while (running)
             {
+                t.Restart();
                 // exit if the app is trying to quit
-                if (!running || Application.Current == null) return;
+                if (!running) return;
                 // get button states from ui thread
                 bool[] list = new bool[0];
-                Application.Current.Dispatcher.Invoke((() =>
+                Application.Current?.Dispatcher.Invoke((() =>
                 {
                     list = getBoxes();
                 }));
                 // run function logic in background thread
-                var t = new Stopwatch();
-                t.Start();
                 var ne = Life.lifeGameTick(list, stride);
-                t.Stop();
-                var el = t.Elapsed.TotalMilliseconds;
+                
                 if (!running) return;
                 // set button states from ui thread
-                Application.Current.Dispatcher.Invoke((() =>
+                try
                 {
-                    setBoxes(ne);
-                    OutputBox.Text = $"generated in {el} ms";
-                }));
+                    Application.Current?.Dispatcher.Invoke(() => { setBoxes(ne); });
+                } catch{} // it's fine if this fails
+
                 // animate
-                await Task.Delay(16);
+                t.Stop();
+                var el = t.Elapsed.TotalMilliseconds.Clamp(0, frametime);
+                await Task.Delay(TimeSpan.FromMilliseconds(frametime - el));
             }
         }
 

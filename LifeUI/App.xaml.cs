@@ -17,6 +17,11 @@ namespace FunctionsinWPF
         {
             return FSharpFunc<T, Unit>.FromConverter(new Converter<T, Unit>(action.ToFunc()));
         }
+
+        public static T Clamp<T>(this T value, T min, T max) where T:IComparable
+        {
+            return value.CompareTo(min) < 0 ? min : value.CompareTo(max) > 0 ? max : value;
+        }
     }
     /// <summary>
     /// Interaction logic for App.xaml
