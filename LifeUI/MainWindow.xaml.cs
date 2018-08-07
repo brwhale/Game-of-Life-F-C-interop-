@@ -46,7 +46,7 @@ namespace FunctionsinWPF
             {
                 for (int j = 0; j < stride; j++)
                 {
-                    var box = new CheckBox() { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, ClickMode = ClickMode.Press, IsHitTestVisible = false };
+                    var box = new CheckBox() { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, IsHitTestVisible = false };
 
                     ChexGrid.Children.Add(box);
                     Grid.SetRow(box, i);
@@ -67,39 +67,46 @@ namespace FunctionsinWPF
             App.functionalmain(fnc);
         }
 
-        void tickFrame()
+        void setBoxes(FSharpList<bool> list)
+        {
+            int index = 0;
+            foreach (CheckBox p in ChexGrid.Children)
+            {
+                p.IsChecked = list[index++];
+            }
+        }
+
+        List<bool> getBoxes()
         {
             var list = new List<bool>();
             foreach (CheckBox p in ChexGrid.Children)
             {
                 list.Add(p.IsChecked ?? false);
             }
-            var ne = Life.lifeGameTick(ListModule.OfSeq(list), stride);
-            int index = 0;
-            foreach (CheckBox p in ChexGrid.Children)
-            {
-                p.IsChecked = ne[index++];
-            }
+            return list;
+        }
+
+        void tickFrame()
+        {
+            setBoxes(Life.lifeGameTick(ListModule.OfSeq(getBoxes()), stride));
         }
 
         async Task tickFrameAsync()
         {
+            // exit if the app is trying to quit
             if (Application.Current == null) return;
-            var list = new List<bool>();
+            // get button states from ui thread
+            List<bool> list = new List<bool>();
             Application.Current.Dispatcher.Invoke((() => {
-                foreach (CheckBox p in ChexGrid.Children)
-                {
-                    list.Add(p.IsChecked ?? false);
-                }
+                list = getBoxes();
             }));
+            // run function logic in background thread
             var ne = Life.lifeGameTick(ListModule.OfSeq(list), stride);
+            // set button states from ui thread
             Application.Current.Dispatcher.Invoke((() => {
-                int index = 0;
-                foreach (CheckBox p in ChexGrid.Children)
-                {
-                    p.IsChecked = ne[index++];
-                }
+                setBoxes(ne);
             }));
+            // animate
             await Task.Delay(16);
             if (running)
             {
@@ -109,12 +116,12 @@ namespace FunctionsinWPF
 
         private void toggleLife(object sender, RoutedEventArgs e)
         {
-            if (running) { running = false; }
-            else
+            if (!running) 
             {
                 running = true;
                 Task.Run(()=>tickFrameAsync());
             }
+            running = !running;
         }
 
         private void frameButton(object sender, RoutedEventArgs e)
