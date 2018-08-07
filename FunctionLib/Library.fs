@@ -1,8 +1,8 @@
 namespace FunctionLib
 
 module Life =
-    // convert bool to numeric value
-    let getIntDex i (l :list<bool>) =
+    // convert bool for indexed list to numeric value
+    let getCellValue i (l :list<bool>) =
         if i > 0 && i < l.Length && l.[i] then
             1
         else
@@ -10,9 +10,7 @@ module Life =
     
     // there's got to be a better way to do this
     let getNeighbors i list stride =
-        (getIntDex (i-1) list) + (getIntDex (i+1) list) + (getIntDex (i-stride+1) list) + 
-        (getIntDex (i-stride) list) + (getIntDex (i-stride-1) list) + (getIntDex (i+stride+1) list) + 
-        (getIntDex (i+stride) list) + (getIntDex (i+stride-1) list)      
+        List.fold (fun count st -> count + (getCellValue (st+i) list)) 0 stride    
     
     // conway's game of life rules:
     // more than 3 or less than 2 neighbors die,
@@ -24,11 +22,15 @@ module Life =
             true
         else
             current
+    
+    // get cell indexes for a certain stride
+    let getNeighborOffsets stride = [1;-1;-stride;-stride+1;-stride-1;stride;stride+1;stride-1]
 
     // process the list with our rules
     let lifeGameTick (cells : list<bool>) stride = 
+        let offsets = getNeighborOffsets stride
         [for i in 0 .. cells.Length-1 do
-            yield isAlive cells.[i] (getNeighbors i cells stride)]
+            yield isAlive cells.[i] (getNeighbors i cells offsets)]
 
 module Main =
     // various functions to play with stuff

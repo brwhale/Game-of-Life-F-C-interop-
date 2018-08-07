@@ -116,12 +116,12 @@ namespace FunctionsinWPF
 
         private void toggleLife(object sender, RoutedEventArgs e)
         {
-            if (!running) 
+            running = !running;
+            if (running) 
             {
-                running = true;
                 Task.Run(()=>tickFrameAsync());
             }
-            running = !running;
+            
         }
 
         private void frameButton(object sender, RoutedEventArgs e)
