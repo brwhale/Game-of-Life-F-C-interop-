@@ -8,7 +8,7 @@ module Life =
         else
             0
     
-    // there's got to be a better way to do this
+    // count number of living neighbors
     let getNeighbors i list stride =
         List.fold (fun count st -> count + (getCellValue (st+i) list)) 0 stride    
     
