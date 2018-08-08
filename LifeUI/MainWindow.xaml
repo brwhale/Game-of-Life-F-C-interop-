@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FunctionsinWPF"
         mc:Ignorable="d"
-        Title="The Game of Life" Height="943" Width="821">
+        Title="The Game of Life" Height="943" Width="821" ResizeMode="CanMinimize">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="144*"/>
