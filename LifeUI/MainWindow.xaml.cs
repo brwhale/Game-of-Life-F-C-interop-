@@ -8,6 +8,7 @@ using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Diagnostics;
 using System.Windows.Media;
+using System.Windows.Shapes;
 
 namespace FunctionsinWPF
 {
@@ -16,10 +17,23 @@ namespace FunctionsinWPF
     /// </summary>
     public partial class MainWindow : Window
     {
-        private int stride = 45;
+        private int stride = 48;
         private bool running;
         private int prevIndex = -1;
         private double frametime;
+        static Brush checkColor = Brushes.DodgerBlue;
+
+        List<Brush> neighborColors = new List <Brush>(){            
+            Brushes.White,
+            Brushes.NavajoWhite,
+            Brushes.Yellow,
+            Brushes.CadetBlue,
+            Brushes.Gray,
+            Brushes.Yellow,
+            Brushes.Orange,
+            Brushes.OrangeRed,
+            Brushes.Red,
+        };
 
         public MainWindow()
         {
@@ -31,21 +45,26 @@ namespace FunctionsinWPF
                 ChexGrid.RowDefinitions.Add(new RowDefinition { Height = gs });
                 ChexGrid.ColumnDefinitions.Add(new ColumnDefinition { Width = gs });
             }
-
+            var h = 790.0;
+            var w = h;
             for (int i = 0; i < stride; i++)
             {
                 for (int j = 0; j < stride; j++)
                 {
-                    var box = new CheckBox() {
+                    var box = new Rectangle() {
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center,
                         IsHitTestVisible = false,
-                        BorderThickness = new Thickness(0),                        
+                        Height = h / stride,
+                        Width = w / stride,
+                        ClipToBounds = false,
+                        Fill = neighborColors[0],
+                        Tag = new Tuple<int, bool>(0,false)
                     };
-
-                    ChexGrid.Children.Add(box);
+                                        
                     Grid.SetRow(box, i);
                     Grid.SetColumn(box, j);
+                    ChexGrid.Children.Add(box);
                 }
             }
             ChexGrid.MouseMove += mouseHandler;            
@@ -69,7 +88,6 @@ namespace FunctionsinWPF
             var y = (int)(pos.Y * stride / grid.ActualHeight);
             return y * stride + x;
         }
-
         private void mouseHandler(object o, MouseEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
@@ -78,8 +96,10 @@ namespace FunctionsinWPF
                 var index = getIndex(e.GetPosition(grid), grid);
                 if (index < grid.Children.Count && prevIndex != index)
                 {
-                    var box = ((CheckBox)grid.Children[index]);
-                    box.IsChecked = !box.IsChecked;
+                    var box = ((Rectangle)grid.Children[index]);
+                    var bb = (Tuple<int, bool>)box.Tag;
+                    box.Tag = new Tuple<int,bool>(bb.Item1, !bb.Item2);
+                    box.Fill = !bb.Item2 ? checkColor : neighborColors[bb.Item1]; ;
                     prevIndex = index;
                 }
             }
@@ -98,35 +118,34 @@ namespace FunctionsinWPF
         private void setBoxes(FSharpList<Tuple<int,bool>> list)
         {
             int index = 0;
-            foreach (CheckBox p in ChexGrid.Children)
+            foreach (Rectangle p in ChexGrid.Children)
             {
-                var ns = list[index].Item1;
-                var check = list[index++].Item2;
-                if (check)
+                var tp = list[index++];
+                if (tp.Item2)
                 {
-                    p.Background = Brushes.CadetBlue;
-                } else if (ns != (int?)p.Tag) {
-                    p.Background = new SolidColorBrush(Color.FromRgb((byte)(31 * ns), (byte)(255 - (31 * ns)), 0));
+                    p.Fill = checkColor;
+                } else {
+                    p.Fill = neighborColors[tp.Item1];
                 }
-                p.Tag = ns;
-                p.IsChecked = check;
+                p.Tag = tp;
             }
         }
 
         private void setBoxes(bool value)
         {
-            foreach (CheckBox p in ChexGrid.Children)
+            foreach (Rectangle p in ChexGrid.Children)
             {
-                p.IsChecked = value;
+                p.Tag = new Tuple<int, bool>(0,value);
+                p.Fill = value ? checkColor : neighborColors[0];
             }
         }
 
         private bool[] getBoxes()
         {
             var list = new List<bool>();
-            foreach (CheckBox p in ChexGrid.Children)
+            foreach (Rectangle p in ChexGrid.Children)
             {
-                list.Add(p.IsChecked ?? false);
+                list.Add(((Tuple<int, bool>)p.Tag).Item2);
             }
             return list.ToArray();
         }

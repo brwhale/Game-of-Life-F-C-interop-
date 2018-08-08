@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:FunctionsinWPF"
         mc:Ignorable="d"
-        Title="The Game of Life" Height="943" Width="821" ResizeMode="CanMinimize">
+        Title="The Game of Life" Height="997" Width="790" ResizeMode="CanMinimize">
     <Grid>
         <Grid.RowDefinitions>
             <RowDefinition Height="144*"/>
@@ -19,8 +19,7 @@
         </Grid.ColumnDefinitions>
         <Button Content="fnc main()" Margin="10,0,0,10" Click="functionStart" Grid.Row="3" Height="23" VerticalAlignment="Bottom" HorizontalAlignment="Left" Width="114"/>
         <TextBlock x:Name="OutputBox" Margin="10,310,10,112" TextWrapping="Wrap" Text="" Grid.ColumnSpan="2" Grid.Row="3" Background="#FFB0A4A4"/>
-        <Grid x:Name="ChexGrid" Margin="10,10,10,217" OpacityMask="#FFCD8B8B" Background="#FFBAEAC5" ShowGridLines="False" Grid.ColumnSpan="2" Grid.RowSpan="4">
-        </Grid>
+        <Grid x:Name="ChexGrid" Margin="10,10,10,217" OpacityMask="#FFCD8B8B" Background="#FFBAEAC5" ShowGridLines="False" Grid.ColumnSpan="2" Grid.RowSpan="4"/>
         <Button Content="Next Frame" Margin="0,0,10,10" Grid.Row="3" Click="frameButton" Grid.Column="1" HorizontalAlignment="Right" Width="126" Height="64" VerticalAlignment="Bottom"/>
         <Button Content="run/stop" Margin="0,0,141,13" Grid.Row="3" Grid.Column="1" Height="20" VerticalAlignment="Bottom" HorizontalAlignment="Right" Width="75" Click="toggleLife"/>
         <Button Content="clear" Grid.Column="1" Margin="0,0,221,13" Grid.Row="3" HorizontalAlignment="Right" Width="75" Height="20" VerticalAlignment="Bottom" Click="clearbutton"/>
