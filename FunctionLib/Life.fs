@@ -26,6 +26,12 @@ module Life =
         | 2 -> current
         | 3 -> true
         | _ -> false
+
+    let isAliveAltRules current neighbors =
+        match neighbors with
+        | 2 | 7 -> current
+        | 3 | 6 -> true
+        | _ -> false
     
     // get cell indexes for a certain stride
     let getNeighborOffsets stride = [1;-1;-stride;-stride+1;-stride-1;stride;stride+1;stride-1]
@@ -34,4 +40,12 @@ module Life =
     let lifeGameTick (cells : array<bool>) stride = 
         let offsets = getNeighborOffsets stride
         [for i in 0 .. cells.Length-1 do
-            yield isAlive cells.[i] (getNeighbors i cells offsets)]
+            let neighbors = getNeighbors i cells offsets
+            yield (neighbors, isAlive cells.[i] neighbors)]
+
+    // process the list with different rules
+    let notlifeGameTick (cells : array<bool>) stride = 
+        let offsets = getNeighborOffsets stride
+        [for i in 0 .. cells.Length-1 do
+            let neighbors = getNeighbors i cells offsets
+            yield (neighbors, isAliveAltRules cells.[i] neighbors)]

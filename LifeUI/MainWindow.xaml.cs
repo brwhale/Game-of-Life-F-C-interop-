@@ -7,6 +7,7 @@ using Microsoft.FSharp.Collections;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using System.Diagnostics;
+using System.Windows.Media;
 
 namespace FunctionsinWPF
 {
@@ -35,7 +36,12 @@ namespace FunctionsinWPF
             {
                 for (int j = 0; j < stride; j++)
                 {
-                    var box = new CheckBox() { HorizontalAlignment = HorizontalAlignment.Center, VerticalAlignment = VerticalAlignment.Center, IsHitTestVisible = false };
+                    var box = new CheckBox() {
+                        HorizontalAlignment = HorizontalAlignment.Center,
+                        VerticalAlignment = VerticalAlignment.Center,
+                        IsHitTestVisible = false,
+                        BorderThickness = new Thickness(0),                        
+                    };
 
                     ChexGrid.Children.Add(box);
                     Grid.SetRow(box, i);
@@ -49,6 +55,7 @@ namespace FunctionsinWPF
             };
             ChexGrid.MouseDown += mouseHandler;
             setFPS(30);
+            tickFrame();
         }
 
         private void setFPS(double newfps)
@@ -88,12 +95,21 @@ namespace FunctionsinWPF
             App.functionalmain(fnc);
         }
 
-        private void setBoxes(FSharpList<bool> list)
+        private void setBoxes(FSharpList<Tuple<int,bool>> list)
         {
             int index = 0;
             foreach (CheckBox p in ChexGrid.Children)
             {
-                p.IsChecked = list[index++];
+                var ns = list[index].Item1;
+                var check = list[index++].Item2;
+                if (check)
+                {
+                    p.Background = Brushes.CadetBlue;
+                } else if (ns != (int?)p.Tag) {
+                    p.Background = new SolidColorBrush(Color.FromRgb((byte)(31 * ns), (byte)(255 - (31 * ns)), 0));
+                }
+                p.Tag = ns;
+                p.IsChecked = check;
             }
         }
 
@@ -181,6 +197,7 @@ namespace FunctionsinWPF
         {
             running = false;
             setBoxes(false);
+            tickFrame();
         }
         
         private void fpsFromUI()
