@@ -21,6 +21,7 @@ namespace FunctionsinWPF
         private bool running;
         private int prevIndex = -1;
         private double frametime;
+        private bool useColor = true;
         static Brush checkColor = Brushes.DodgerBlue;
 
         List<Brush> neighborColors = new List <Brush>(){            
@@ -34,6 +35,18 @@ namespace FunctionsinWPF
             Brushes.OrangeRed,
             Brushes.Red,
         };
+
+        Brush getColor(int n)
+        {
+            if (useColor)
+            {
+                return neighborColors[n];
+            }
+            else
+            {
+                return neighborColors[0];
+            }
+        }
 
         public MainWindow()
         {
@@ -55,13 +68,13 @@ namespace FunctionsinWPF
                         HorizontalAlignment = HorizontalAlignment.Center,
                         VerticalAlignment = VerticalAlignment.Center,
                         IsHitTestVisible = false,
-                        Height = h / stride,
-                        Width = w / stride,
+                        Height = h / stride - 2,
+                        Width = w / stride - 2,
                         ClipToBounds = false,
-                        Fill = neighborColors[0],
+                        Fill = getColor(0),
                         Tag = new Tuple<int, bool>(0,false)
                     };
-                                        
+                    
                     Grid.SetRow(box, i);
                     Grid.SetColumn(box, j);
                     ChexGrid.Children.Add(box);
@@ -73,7 +86,7 @@ namespace FunctionsinWPF
                 prevIndex = -1;
             };
             ChexGrid.MouseDown += mouseHandler;
-            setFPS(30);
+            setFPS(60);
             tickFrame();
         }
 
@@ -88,6 +101,7 @@ namespace FunctionsinWPF
             var y = (int)(pos.Y * stride / grid.ActualHeight);
             return y * stride + x;
         }
+
         private void mouseHandler(object o, MouseEventArgs e)
         {
             if (e.LeftButton == MouseButtonState.Pressed)
@@ -99,20 +113,10 @@ namespace FunctionsinWPF
                     var box = ((Rectangle)grid.Children[index]);
                     var bb = (Tuple<int, bool>)box.Tag;
                     box.Tag = new Tuple<int,bool>(bb.Item1, !bb.Item2);
-                    box.Fill = !bb.Item2 ? checkColor : neighborColors[bb.Item1]; ;
+                    box.Fill = !bb.Item2 ? checkColor : getColor(bb.Item1); ;
                     prevIndex = index;
                 }
             }
-        }
-
-        private void functionStart(object sender, RoutedEventArgs e)
-        {
-            Action<string> fnc = (text) =>
-            {
-                Application.Current.Dispatcher.Invoke((() => { OutputBox.Text = text; }));
-                
-            };
-            App.functionalmain(fnc);
         }
 
         private void setBoxes(FSharpList<Tuple<int,bool>> list)
@@ -125,7 +129,7 @@ namespace FunctionsinWPF
                 {
                     p.Fill = checkColor;
                 } else {
-                    p.Fill = neighborColors[tp.Item1];
+                    p.Fill = getColor(tp.Item1);
                 }
                 p.Tag = tp;
             }
@@ -136,7 +140,7 @@ namespace FunctionsinWPF
             foreach (Rectangle p in ChexGrid.Children)
             {
                 p.Tag = new Tuple<int, bool>(0,value);
-                p.Fill = value ? checkColor : neighborColors[0];
+                p.Fill = value ? checkColor : getColor(0);
             }
         }
 
@@ -152,12 +156,7 @@ namespace FunctionsinWPF
 
         private void tickFrame()
         {
-            var t = new Stopwatch();
-            t.Start();
             setBoxes(Life.lifeGameTick(getBoxes(), stride));
-            t.Stop();
-            var el = t.Elapsed.TotalMilliseconds;
-            OutputBox.Text = $"generated in {el} ms";
         }
 
         private async Task tickFrameAsync()
@@ -206,10 +205,9 @@ namespace FunctionsinWPF
             tickFrame();
         }
 
-        private void fillbutton(object sender, RoutedEventArgs e)
+        private void colorsbutton(object sender, RoutedEventArgs e)
         {
-            running = false;
-            setBoxes(true);
+            useColor = !useColor;
         }
 
         private void clearbutton(object sender, RoutedEventArgs e)

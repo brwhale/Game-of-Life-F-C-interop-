@@ -6,7 +6,10 @@
 
   <ItemGroup>
     <Compile Include="Life.fs" />
-    <Compile Include="Library.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Update="FSharp.Core" Version="8.0.100" />
   </ItemGroup>
 
 </Project>

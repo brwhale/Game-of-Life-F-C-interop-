@@ -28,9 +28,6 @@ namespace FunctionsinWPF
     /// </summary>
     public partial class App : Application
     {        
-        public static void functionalmain(Action<string> fnc)
-        {            
-            FunctionLib.Main.main(fnc.ToFSharpFunc());
-        }
+
     }
 }
